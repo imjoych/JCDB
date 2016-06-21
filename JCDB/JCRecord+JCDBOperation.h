@@ -36,7 +36,7 @@
 + (NSArray<JCRecord *> *)queryAllRecords;
 
 /** Count all records in the table. */
-+ (NSUInteger)countAllRecords;
++ (uint64_t)countAllRecords;
 
 /** Delete all records in the table. */
 + (BOOL)deleteAllRecords;

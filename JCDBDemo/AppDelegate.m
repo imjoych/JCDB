@@ -43,7 +43,7 @@
     NSArray *allRecords = [JCTestRecord queryAllRecords];
     NSLog(@"queryAllRecords: %@", @(allRecords.count));
     
-    NSUInteger count = [JCTestRecord countAllRecords];
+    uint64_t count = [JCTestRecord countAllRecords];
     NSLog(@"countAllRecords: %@", @(count));
     
     result = [JCTestRecord deleteAllRecords];

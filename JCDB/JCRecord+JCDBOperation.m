@@ -41,8 +41,7 @@ static NSString *const RECORD_VALUE_SIGN_FLAG = @"?";
 + (BOOL)createTable
 {
     NSArray *properties = [self properties];
-    NSString *primaryKeyPropertyName = [self primaryKeyPropertyName];
-    NSAssert(primaryKeyPropertyName.length > 0, @"primary key is not exist");
+    NSAssert([self primaryKeyPropertyName].length > 0, @"primary key is not exist");
     
     NSString *tableName = NSStringFromClass([self class]);
     NSString *propertiesString = nil;
@@ -174,11 +173,11 @@ static NSString *const RECORD_VALUE_SIGN_FLAG = @"?";
     return recordList;
 }
 
-+ (NSUInteger)countAllRecords
++ (uint64_t)countAllRecords
 {
     NSString *tableName = NSStringFromClass([self class]);
     NSString *sql = [NSString stringWithFormat:COUNT_ALL_SQL, tableName];
-    __block NSUInteger count = 0;
+    __block uint64_t count = 0;
     [[JCDBManager sharedManager].dbQueue inDatabase:^(FMDatabase *db) {
         FMResultSet *rs = [db executeQuery:sql];
         if ([rs next]) {
