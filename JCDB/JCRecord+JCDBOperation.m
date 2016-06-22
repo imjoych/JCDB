@@ -20,6 +20,8 @@ static NSString *const ALTER_TABLE_SQL = @"ALTER TABLE %@ ADD %@ %@";
 
 static NSString *const UPDATE_RECORD_SQL = @"INSERT OR REPLACE INTO %@ (%@) VALUES (%@)";
 
+static NSString *const UPDATE_RECORD_COLUMNS_SQL = @"UPDATE %@ SET %@ WHERE %@ = ?";
+
 static NSString *const SELECT_ALL_SQL = @"SELECT * FROM %@";
 
 static NSString *const SELECT_RECORD_SQL = @"SELECT * FROM %@ WHERE %@ = ? LIMIT 1";
@@ -164,16 +166,8 @@ static NSString *const RECORD_VALUE_SIGN_FLAG = @"?";
 {
     NSString *tableName = NSStringFromClass([self class]);
     NSString *sql = [NSString stringWithFormat:SELECT_ALL_SQL, tableName];
-    __block NSMutableArray *recordList = [NSMutableArray array];
-    [[JCDBManager sharedManager].dbQueue inDatabase:^(FMDatabase *db) {
-        FMResultSet *rs = [db executeQuery:sql];
-        while ([rs next]) {
-            JCRecord *record = [self recordWithResultSet:rs];
-            [recordList addObject:record];
-        }
-        [rs close];
-    }];
-    return recordList;
+    return [self queryRecordsWithSql:sql
+                           arguments:nil];
 }
 
 + (NSArray<NSDictionary *> *)queryColumns:(NSArray<NSString *> *)columns
@@ -264,6 +258,43 @@ static NSString *const RECORD_VALUE_SIGN_FLAG = @"?";
     __block BOOL result = NO;
     [[JCDBManager sharedManager].dbQueue inDatabase:^(FMDatabase *db) {
         result = [db executeUpdate:sql withArgumentsInArray:propertyValues];
+    }];
+    return result;
+}
+
+- (BOOL)updateRecordColumns:(NSArray<NSString *> *)columns
+                     values:(NSArray *)values
+{
+    if (columns.count < 1
+        || values.count < 1) {
+        return NO;
+    }
+    NSString *tableName = NSStringFromClass([self class]);
+    NSString *primaryKeyPropertyName = [[self class] primaryKeyPropertyName];
+    NSString *columnsNamesAndValueSigns = nil;
+    NSString *valueSignFlag = RECORD_VALUE_SIGN_FLAG;
+    for (NSString *column in columns) {
+        if (![[self class] columnExists:column]) { // column is not exist in the table
+            return NO;
+        }
+        if ([column isEqualToString:primaryKeyPropertyName]) { // update column should not be primary key
+            return NO;
+        }
+        
+        NSString *nameAndValueSign = [NSString stringWithFormat:@"%@ = %@", column, valueSignFlag];
+        if (!columnsNamesAndValueSigns) {
+            columnsNamesAndValueSigns = nameAndValueSign;
+        } else {
+            columnsNamesAndValueSigns = [NSString stringWithFormat:@"%@, %@", columnsNamesAndValueSigns, nameAndValueSign];
+        }
+    }
+    
+    NSString *sql = [NSString stringWithFormat:UPDATE_RECORD_COLUMNS_SQL, tableName, columnsNamesAndValueSigns, primaryKeyPropertyName];
+    NSMutableArray *arguments = [NSMutableArray arrayWithArray:values];
+    [arguments addObject:[self valueForKey:primaryKeyPropertyName]];
+    __block BOOL result = NO;
+    [[JCDBManager sharedManager].dbQueue inDatabase:^(FMDatabase *db) {
+        result = [db executeUpdate:sql withArgumentsInArray:arguments];
     }];
     return result;
 }

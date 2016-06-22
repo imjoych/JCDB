@@ -52,8 +52,12 @@
 
 #pragma mark - Current record operation
 
-/** Update or insert the record. */
+/** Insert or replace the record. */
 - (BOOL)updateRecord;
+
+/** Update some columns values of the record. */
+- (BOOL)updateRecordColumns:(NSArray<NSString *> *)columns
+                     values:(NSArray *)values;
 
 /** Delete the record. */
 - (BOOL)deleteRecord;

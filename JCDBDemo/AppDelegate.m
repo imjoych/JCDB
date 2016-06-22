@@ -34,7 +34,11 @@
     JCTestRecord *record = [JCTestRecord queryRecordWithPrimaryKeyValue:@"primaryKeyProperty2"];
     NSLog(@"queryRecordWithPrimaryKeyValue: %@", record);
     
-    BOOL result = [record deleteRecord];
+    BOOL result = [record updateRecordColumns:@[@"testBOOL", @"testDate", @"testNumber"]
+                                       values:@[@(NO), [NSDate dateWithTimeIntervalSince1970:9], @(6.22)]];
+    NSLog(@"updateRecordColumns:values: %@", @(result));
+    
+    result = [record deleteRecord];
     NSLog(@"deleteRecord %@", @(result));
     
     NSArray *queryRecords = [JCTestRecord queryRecordsWithConditions:@{@"testEnumType":@(JCTestEnumTypeTwo)}];
