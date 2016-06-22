@@ -35,22 +35,33 @@
     NSLog(@"queryRecordWithPrimaryKeyValue: %@", record);
     
     BOOL result = [record deleteRecord];
-    NSLog(@"deleteRecord: %@", @(result));
+    NSLog(@"deleteRecord %@", @(result));
     
-    NSArray *queryRecordList = [JCTestRecord queryRecordListWithConditions:@{@"testEnumType":@(JCTestEnumTypeTwo)}];
-    NSLog(@"queryRecordListWithConditions: %@", @(queryRecordList.count));
+    NSArray *queryRecords = [JCTestRecord queryRecordsWithConditions:@{@"testEnumType":@(JCTestEnumTypeTwo)}];
+    NSLog(@"queryRecordsWithConditions: %@", @(queryRecords.count));
     
-    NSArray *allRecords = [JCTestRecord queryAllRecords];
-    NSLog(@"queryAllRecords: %@", @(allRecords.count));
+    queryRecords = [JCTestRecord queryRecordsWithConditionalExpression:@"WHERE testEnumType < ?" arguments:@[@(JCTestEnumTypeTwo)]];
+    NSLog(@"queryRecordsWithConditionalExpression:arguments: %@", @(queryRecords.count));
+    
+    queryRecords = [JCTestRecord queryRecordsWithConditionalExpression:@"ORDER BY testEnumType DESC" arguments:nil];
+    NSLog(@"queryRecordsWithConditionalExpression:arguments: %@", @(queryRecords.count));
+    
+    queryRecords = [JCTestRecord queryAllRecords];
+    NSLog(@"queryAllRecords %@", @(queryRecords.count));
+    
+    NSArray *queryColumns = [JCTestRecord queryColumns:@[@"testPrimaryKey", @"testDate"]
+                                 conditionalExpression:@"WHERE testEnumType < ? ORDER BY testInteger DESC"
+                                             arguments:@[@(JCTestEnumTypeOne)]];
+    NSLog(@"queryColumns:conditionalExpression:arguments: %@", @(queryColumns.count));
     
     uint64_t count = [JCTestRecord countAllRecords];
-    NSLog(@"countAllRecords: %@", @(count));
+    NSLog(@"countAllRecords %@", @(count));
     
     result = [JCTestRecord deleteAllRecords];
-    NSLog(@"deleteAllRecords: %@", @(result));
+    NSLog(@"deleteAllRecords %@", @(result));
     
     result = [JCTestRecord dropTable];
-    NSLog(@"dropTable: %@", @(result));
+    NSLog(@"dropTable %@", @(result));
 }
 
 - (void)updateRecordListTest
@@ -84,7 +95,7 @@
         
         BOOL success = [record updateRecord];
         if (success) {
-            NSLog(@"updateRecord: %@", @(success));
+            NSLog(@"updateRecord %@", @(success));
         }
     }
 }

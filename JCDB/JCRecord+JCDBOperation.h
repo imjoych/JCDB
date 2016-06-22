@@ -29,11 +29,20 @@
 /** Query a record with primary key value. */
 + (id)queryRecordWithPrimaryKeyValue:(id)value;
 
-/** Query records with conditions which are properties values for properties names. */
-+ (NSArray<JCRecord *> *)queryRecordListWithConditions:(NSDictionary *)conditions;
+/** Query records with AND conditions which are properties values for properties names. */
++ (NSArray<JCRecord *> *)queryRecordsWithConditions:(NSDictionary *)conditions;
+
+/** Query records with conditional expression and arguments. */
++ (NSArray<JCRecord *> *)queryRecordsWithConditionalExpression:(NSString *)conditionalExpression
+                                                     arguments:(NSArray *)arguments;
 
 /** Query all records */
 + (NSArray<JCRecord *> *)queryAllRecords;
+
+/** Query columns values for columns names with conditional expression and arguments. */
++ (NSArray<NSDictionary *> *)queryColumns:(NSArray<NSString *> *)columns
+                    conditionalExpression:(NSString *)conditionalExpression
+                                arguments:(NSArray *)arguments;
 
 /** Count all records in the table. */
 + (uint64_t)countAllRecords;

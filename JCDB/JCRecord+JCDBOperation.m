@@ -22,9 +22,9 @@ static NSString *const UPDATE_RECORD_SQL = @"INSERT OR REPLACE INTO %@ (%@) VALU
 
 static NSString *const SELECT_ALL_SQL = @"SELECT * FROM %@";
 
-static NSString *const SELECT_RECORDS_SQL = @"SELECT * FROM %@ WHERE";
-
 static NSString *const SELECT_RECORD_SQL = @"SELECT * FROM %@ WHERE %@ = ? LIMIT 1";
+
+static NSString *const SELECT_COLUMNS_SQL = @"SELECT %@ FROM %@";
 
 static NSString *const COUNT_ALL_SQL = @"SELECT COUNT(*) AS 'count' FROM %@";
 
@@ -125,36 +125,39 @@ static NSString *const RECORD_VALUE_SIGN_FLAG = @"?";
     return record;
 }
 
-+ (NSArray<JCRecord *> *)queryRecordListWithConditions:(NSDictionary *)conditions
++ (NSArray<JCRecord *> *)queryRecordsWithConditions:(NSDictionary *)conditions
 {
     if (conditions.count < 1) {
         return nil;
     }
-    NSString *tableName = NSStringFromClass([self class]);
-    NSString *conditionsString = nil;
+    NSString *conditionalExpression = nil;
     NSMutableArray *values = [NSMutableArray arrayWithCapacity:conditions.count];
     for (NSString *key in conditions) {
         NSString *conditionStr = [NSString stringWithFormat:@"%@ = %@", key, RECORD_VALUE_SIGN_FLAG];
-        if (conditionsString) {
-            conditionsString = [NSString stringWithFormat:@"%@ AND %@", conditionsString, conditionStr];
+        if (conditionalExpression) {
+            conditionalExpression = [NSString stringWithFormat:@"%@ AND %@", conditionalExpression, conditionStr];
         } else {
-            conditionsString = conditionStr;
+            conditionalExpression = conditionStr;
         }
         [values addObject:conditions[key]];
     }
-    NSString *sql = [NSString stringWithFormat:SELECT_RECORDS_SQL, tableName];
-    sql = [NSString stringWithFormat:@"%@ %@", sql, conditionsString];
+    conditionalExpression = [NSString stringWithFormat:@" WHERE %@", conditionalExpression];
+    return [self queryRecordsWithConditionalExpression:conditionalExpression
+                                             arguments:values];
+}
+
++ (NSArray<JCRecord *> *)queryRecordsWithConditionalExpression:(NSString *)conditionalExpression
+                                                     arguments:(NSArray *)arguments
+{
+    if (conditionalExpression.length < 1) {
+        return nil;
+    }
     
-    __block NSMutableArray *recordList = [NSMutableArray array];
-    [[JCDBManager sharedManager].dbQueue inDatabase:^(FMDatabase *db) {
-        FMResultSet *rs = [db executeQuery:sql withArgumentsInArray:values];
-        while ([rs next]) {
-            JCRecord *record = [self recordWithResultSet:rs];
-            [recordList addObject:record];
-        }
-        [rs close];
-    }];
-    return recordList;
+    NSString *tableName = NSStringFromClass([self class]);
+    NSString *sql = [NSString stringWithFormat:SELECT_ALL_SQL, tableName];
+    sql = [NSString stringWithFormat:@"%@ %@", sql, conditionalExpression];
+    return [self queryRecordsWithSql:sql
+                           arguments:arguments];
 }
 
 + (NSArray<JCRecord *> *)queryAllRecords
@@ -171,6 +174,44 @@ static NSString *const RECORD_VALUE_SIGN_FLAG = @"?";
         [rs close];
     }];
     return recordList;
+}
+
++ (NSArray<NSDictionary *> *)queryColumns:(NSArray<NSString *> *)columns
+                    conditionalExpression:(NSString *)conditionalExpression
+                                arguments:(NSArray *)arguments
+{
+    if (columns.count < 1
+        || conditionalExpression.length < 1) {
+        return nil;
+    }
+    
+    NSString *columnsString = nil;
+    for (NSString *column in columns) {
+        if (![self columnExists:column]) { // column is not exist in the table
+            return nil;
+        }
+        if (columnsString) {
+            columnsString = [NSString stringWithFormat:@"%@,%@", columnsString, column];
+        } else {
+            columnsString = column;
+        }
+    }
+    NSString *tableName = NSStringFromClass([self class]);
+    NSString *sql = [NSString stringWithFormat:SELECT_COLUMNS_SQL, columnsString, tableName];
+    sql = [NSString stringWithFormat:@"%@ %@", sql, conditionalExpression];
+    __block NSMutableArray *columnsList = [NSMutableArray array];
+    [[JCDBManager sharedManager].dbQueue inDatabase:^(FMDatabase *db) {
+        FMResultSet *rs = [db executeQuery:sql withArgumentsInArray:arguments];
+        while ([rs next]) {
+            NSMutableDictionary *columnsDict = [NSMutableDictionary dictionaryWithCapacity:columns.count];
+            for (NSString *column in columns) {
+                columnsDict[column] = [rs objectForColumnName:column];
+            }
+            [columnsList addObject:columnsDict];
+        }
+        [rs close];
+    }];
+    return columnsList;
 }
 
 + (uint64_t)countAllRecords
@@ -240,6 +281,22 @@ static NSString *const RECORD_VALUE_SIGN_FLAG = @"?";
 }
 
 #pragma mark - Private
+
+/** Query records with sql and arguments. */
++ (NSArray<JCRecord *> *)queryRecordsWithSql:(NSString *)sql
+                                   arguments:(NSArray *)arguments
+{
+    __block NSMutableArray *recordList = [NSMutableArray array];
+    [[JCDBManager sharedManager].dbQueue inDatabase:^(FMDatabase *db) {
+        FMResultSet *rs = [db executeQuery:sql withArgumentsInArray:arguments];
+        while ([rs next]) {
+            JCRecord *record = [self recordWithResultSet:rs];
+            [recordList addObject:record];
+        }
+        [rs close];
+    }];
+    return recordList;
+}
 
 + (JCRecord *)recordWithResultSet:(FMResultSet *)rs
 {
