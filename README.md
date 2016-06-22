@@ -1,12 +1,12 @@
 # JCDB
-A useful iOS database framework based on [FMDB](https://github.com/ccgus/fmdb).
+A useful iOS database framework based on [FMDB](https://github.com/ccgus/fmdb) and [SQLite](http://sqlite.org).
 
 ## Features
 This framework supports the development of iOS 7.0+ in ARC.
 
 * Database table CREATE/DROP/ALERT.
-* Database records SELECT query.
-* Database record INSERT/REPLACE/DELETE.
+* Database records queries with SELECT.
+* Database records INSERT/REPLACE/DELETE.
 
 
 
