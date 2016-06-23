@@ -44,10 +44,12 @@
     NSArray *queryRecords = [JCTestRecord queryRecordsWithConditions:@{@"testEnumType":@(JCTestEnumTypeTwo)}];
     NSLog(@"queryRecordsWithConditions: %@", @(queryRecords.count));
     
-    queryRecords = [JCTestRecord queryRecordsWithConditionalExpression:@"WHERE testEnumType < ?" arguments:@[@(JCTestEnumTypeTwo)]];
+    queryRecords = [JCTestRecord queryRecordsWithConditionalExpression:@"WHERE testEnumType < ?"
+                                                             arguments:@[@(JCTestEnumTypeTwo)]];
     NSLog(@"queryRecordsWithConditionalExpression:arguments: %@", @(queryRecords.count));
     
-    queryRecords = [JCTestRecord queryRecordsWithConditionalExpression:@"ORDER BY testEnumType DESC" arguments:nil];
+    queryRecords = [JCTestRecord queryRecordsWithConditionalExpression:@"ORDER BY testEnumType DESC"
+                                                             arguments:nil];
     NSLog(@"queryRecordsWithConditionalExpression:arguments: %@", @(queryRecords.count));
     
     queryRecords = [JCTestRecord queryAllRecords];
@@ -58,14 +60,30 @@
                                              arguments:@[@(JCTestEnumTypeOne)]];
     NSLog(@"queryColumns:conditionalExpression:arguments: %@", @(queryColumns.count));
     
-    uint64_t count = [JCTestRecord countAllRecords];
+    uint64_t count = [JCTestRecord countRecordsWithConditions:@{@"testEnumType":@(JCTestEnumTypeTwo)}];
+    NSLog(@"countRecordsWithConditions: %@", @(count));
+    
+    count = [JCTestRecord countRecordsWithConditionalExpression:@"WHERE testEnumType < ?"
+                                                      arguments:@[@(JCTestEnumTypeOne)]];
+    NSLog(@"countRecordsWithConditionalExpression:arguments: %@", @(count));
+    
+    count = [JCTestRecord countAllRecords];
     NSLog(@"countAllRecords %@", @(count));
+    
+    result = [JCTestRecord deleteRecordsWithConditions:@{@"testEnumType":@(JCTestEnumTypeTwo)}];
+    NSLog(@"deleteRecordsWithConditions: %@", @(result));
+    
+    result = [JCTestRecord deleteRecordsWithConditionalExpression:@"WHERE testEnumType < ?"
+                                                        arguments:@[@(JCTestEnumTypeOne)]];
+    NSLog(@"deleteRecordsWithConditionalExpression:arguments: %@", @(result));
     
     result = [JCTestRecord deleteAllRecords];
     NSLog(@"deleteAllRecords %@", @(result));
     
     result = [JCTestRecord dropTable];
     NSLog(@"dropTable %@", @(result));
+    
+    [[JCDBManager sharedManager] closeDB];
 }
 
 - (void)updateRecordListTest
@@ -99,7 +117,7 @@
         
         BOOL success = [record updateRecord];
         if (success) {
-            NSLog(@"updateRecord %@", @(success));
+//            NSLog(@"updateRecord %@", @(success));
         }
     }
 }

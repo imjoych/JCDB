@@ -44,8 +44,22 @@
                     conditionalExpression:(NSString *)conditionalExpression
                                 arguments:(NSArray *)arguments;
 
+/** Count records with AND conditions which are properties values for properties names. */
++ (uint64_t)countRecordsWithConditions:(NSDictionary *)conditions;
+
+/** Count records with conditional expression and arguments. */
++ (uint64_t)countRecordsWithConditionalExpression:(NSString *)conditionalExpression
+                                        arguments:(NSArray *)arguments;
+
 /** Count all records in the table. */
 + (uint64_t)countAllRecords;
+
+/** Delete records with AND conditions which are properties values for properties names. */
++ (BOOL)deleteRecordsWithConditions:(NSDictionary *)conditions;
+
+/** Delete records with conditional expression and arguments. */
++ (BOOL)deleteRecordsWithConditionalExpression:(NSString *)conditionalExpression
+                                     arguments:(NSArray *)arguments;
 
 /** Delete all records in the table. */
 + (BOOL)deleteAllRecords;

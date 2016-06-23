@@ -34,8 +34,6 @@ static NSString *const DELETE_ALL_SQL = @"DELETE FROM %@";
 
 static NSString *const DELETE_RECORD_SQL = @"DELETE FROM %@ WHERE %@ = ?";
 
-static NSString *const RECORD_VALUE_SIGN_FLAG = @"?";
-
 @implementation JCRecord (JCDBOperation)
 
 #pragma mark - Table operation
@@ -59,22 +57,16 @@ static NSString *const RECORD_VALUE_SIGN_FLAG = @"?";
         }
     }
     NSString *sql = [NSString stringWithFormat:CREATE_TABLE_SQL, tableName, propertiesString];
-    __block BOOL result = NO;
-    [[JCDBManager sharedManager].dbQueue inDatabase:^(FMDatabase *db) {
-        result = [db executeUpdate:sql];
-    }];
-    return result;
+    return [self executeUpdateWithSql:sql
+                            arguments:nil];
 }
 
 + (BOOL)dropTable
 {
     NSString *tableName = NSStringFromClass([self class]);
     NSString *sql = [NSString stringWithFormat:DROP_TABLE_SQL, tableName];
-    __block BOOL result = NO;
-    [[JCDBManager sharedManager].dbQueue inDatabase:^(FMDatabase *db) {
-        result = [db executeUpdate:sql];
-    }];
-    return result;
+    return [self executeUpdateWithSql:sql
+                            arguments:nil];
 }
 
 + (BOOL)alterTableWithColumn:(NSString *)column
@@ -99,11 +91,8 @@ static NSString *const RECORD_VALUE_SIGN_FLAG = @"?";
     }
     NSString *tableName = NSStringFromClass([self class]);
     NSString *sql = [NSString stringWithFormat:ALTER_TABLE_SQL, tableName, column, fieldType];
-    __block BOOL result = NO;
-    [[JCDBManager sharedManager].dbQueue inDatabase:^(FMDatabase *db) {
-        result = [db executeUpdate:sql];
-    }];
-    return result;
+    return [self executeUpdateWithSql:sql
+                            arguments:nil];
 }
 
 #pragma mark - Records operation
@@ -132,20 +121,9 @@ static NSString *const RECORD_VALUE_SIGN_FLAG = @"?";
     if (conditions.count < 1) {
         return nil;
     }
-    NSString *conditionalExpression = nil;
-    NSMutableArray *values = [NSMutableArray arrayWithCapacity:conditions.count];
-    for (NSString *key in conditions) {
-        NSString *conditionStr = [NSString stringWithFormat:@"%@ = %@", key, RECORD_VALUE_SIGN_FLAG];
-        if (conditionalExpression) {
-            conditionalExpression = [NSString stringWithFormat:@"%@ AND %@", conditionalExpression, conditionStr];
-        } else {
-            conditionalExpression = conditionStr;
-        }
-        [values addObject:conditions[key]];
-    }
-    conditionalExpression = [NSString stringWithFormat:@" WHERE %@", conditionalExpression];
-    return [self queryRecordsWithConditionalExpression:conditionalExpression
-                                             arguments:values];
+    NSArray *expressionAndArguments = [self conditionalExpressionAndArguments:conditions];
+    return [self queryRecordsWithConditionalExpression:expressionAndArguments[0]
+                                             arguments:expressionAndArguments[1]];
 }
 
 + (NSArray<JCRecord *> *)queryRecordsWithConditionalExpression:(NSString *)conditionalExpression
@@ -208,30 +186,68 @@ static NSString *const RECORD_VALUE_SIGN_FLAG = @"?";
     return columnsList;
 }
 
++ (uint64_t)countRecordsWithConditions:(NSDictionary *)conditions
+{
+    if (conditions.count < 1) {
+        return 0;
+    }
+    NSArray *expressionAndArguments = [self conditionalExpressionAndArguments:conditions];
+    return [self countRecordsWithConditionalExpression:expressionAndArguments[0]
+                                             arguments:expressionAndArguments[1]];
+}
+
++ (uint64_t)countRecordsWithConditionalExpression:(NSString *)conditionalExpression
+                                        arguments:(NSArray *)arguments
+{
+    if (conditionalExpression.length < 1) {
+        return 0;
+    }
+    
+    NSString *tableName = NSStringFromClass([self class]);
+    NSString *sql = [NSString stringWithFormat:COUNT_ALL_SQL, tableName];
+    sql = [NSString stringWithFormat:@"%@ %@", sql, conditionalExpression];
+    return [self countRecordsWithSql:sql
+                           arguments:arguments];
+}
+
 + (uint64_t)countAllRecords
 {
     NSString *tableName = NSStringFromClass([self class]);
     NSString *sql = [NSString stringWithFormat:COUNT_ALL_SQL, tableName];
-    __block uint64_t count = 0;
-    [[JCDBManager sharedManager].dbQueue inDatabase:^(FMDatabase *db) {
-        FMResultSet *rs = [db executeQuery:sql];
-        if ([rs next]) {
-            count = [rs unsignedLongLongIntForColumn:@"count"];
-        }
-        [rs close];
-    }];
-    return count;
+    return [self countRecordsWithSql:sql
+                           arguments:nil];
+}
+
++ (BOOL)deleteRecordsWithConditions:(NSDictionary *)conditions
+{
+    if (conditions.count < 1) {
+        return NO;
+    }
+    NSArray *expressionAndArguments = [self conditionalExpressionAndArguments:conditions];
+    return [self deleteRecordsWithConditionalExpression:expressionAndArguments[0]
+                                              arguments:expressionAndArguments[1]];
+}
+
++ (BOOL)deleteRecordsWithConditionalExpression:(NSString *)conditionalExpression
+                                     arguments:(NSArray *)arguments
+{
+    if (conditionalExpression.length < 1) {
+        return NO;
+    }
+    
+    NSString *tableName = NSStringFromClass([self class]);
+    NSString *sql = [NSString stringWithFormat:DELETE_ALL_SQL, tableName];
+    sql = [NSString stringWithFormat:@"%@ %@", sql, conditionalExpression];
+    return [self executeUpdateWithSql:sql
+                            arguments:arguments];
 }
 
 + (BOOL)deleteAllRecords
 {
     NSString *tableName = NSStringFromClass([self class]);
     NSString *sql = [NSString stringWithFormat:DELETE_ALL_SQL, tableName];
-    __block BOOL result = NO;
-    [[JCDBManager sharedManager].dbQueue inDatabase:^(FMDatabase *db) {
-        result = [db executeUpdate:sql];
-    }];
-    return result;
+    return [self executeUpdateWithSql:sql
+                            arguments:nil];
 }
 
 #pragma mark - Current record operation
@@ -242,24 +258,20 @@ static NSString *const RECORD_VALUE_SIGN_FLAG = @"?";
     NSArray *properties = [[self class] properties];
     NSString *propertyKeys = nil;
     NSString *propertyValueSigns = nil;
-    NSString *valueSignFlag = RECORD_VALUE_SIGN_FLAG;
     NSMutableArray *propertyValues = [NSMutableArray array];
     for (JCRecordClassProperty *property in properties) {
         if (!propertyKeys) {
             propertyKeys = property.name;
-            propertyValueSigns = valueSignFlag;
+            propertyValueSigns = @"?";
         } else {
             propertyKeys = [NSString stringWithFormat:@"%@, %@", propertyKeys, property.name];
-            propertyValueSigns = [NSString stringWithFormat:@"%@, %@", propertyValueSigns, valueSignFlag];
+            propertyValueSigns = [NSString stringWithFormat:@"%@, ?", propertyValueSigns];
         }
         [propertyValues addObject:[self valueForKey:property.name]];
     }
     NSString *sql = [NSString stringWithFormat:UPDATE_RECORD_SQL, tableName, propertyKeys, propertyValueSigns];
-    __block BOOL result = NO;
-    [[JCDBManager sharedManager].dbQueue inDatabase:^(FMDatabase *db) {
-        result = [db executeUpdate:sql withArgumentsInArray:propertyValues];
-    }];
-    return result;
+    return [[self class] executeUpdateWithSql:sql
+                                    arguments:propertyValues];
 }
 
 - (BOOL)updateRecordColumns:(NSArray<NSString *> *)columns
@@ -272,7 +284,6 @@ static NSString *const RECORD_VALUE_SIGN_FLAG = @"?";
     NSString *tableName = NSStringFromClass([self class]);
     NSString *primaryKeyPropertyName = [[self class] primaryKeyPropertyName];
     NSString *columnsNamesAndValueSigns = nil;
-    NSString *valueSignFlag = RECORD_VALUE_SIGN_FLAG;
     for (NSString *column in columns) {
         if (![[self class] columnExists:column]) { // column is not exist in the table
             return NO;
@@ -281,7 +292,7 @@ static NSString *const RECORD_VALUE_SIGN_FLAG = @"?";
             return NO;
         }
         
-        NSString *nameAndValueSign = [NSString stringWithFormat:@"%@ = %@", column, valueSignFlag];
+        NSString *nameAndValueSign = [NSString stringWithFormat:@"%@ = ?", column];
         if (!columnsNamesAndValueSigns) {
             columnsNamesAndValueSigns = nameAndValueSign;
         } else {
@@ -292,11 +303,8 @@ static NSString *const RECORD_VALUE_SIGN_FLAG = @"?";
     NSString *sql = [NSString stringWithFormat:UPDATE_RECORD_COLUMNS_SQL, tableName, columnsNamesAndValueSigns, primaryKeyPropertyName];
     NSMutableArray *arguments = [NSMutableArray arrayWithArray:values];
     [arguments addObject:[self valueForKey:primaryKeyPropertyName]];
-    __block BOOL result = NO;
-    [[JCDBManager sharedManager].dbQueue inDatabase:^(FMDatabase *db) {
-        result = [db executeUpdate:sql withArgumentsInArray:arguments];
-    }];
-    return result;
+    return [[self class] executeUpdateWithSql:sql
+                                    arguments:arguments];
 }
 
 - (BOOL)deleteRecord
@@ -304,14 +312,33 @@ static NSString *const RECORD_VALUE_SIGN_FLAG = @"?";
     NSString *tableName = NSStringFromClass([self class]);
     NSString *primaryKeyPropertyName = [[self class] primaryKeyPropertyName];
     NSString *sql = [NSString stringWithFormat:DELETE_RECORD_SQL, tableName, primaryKeyPropertyName];
+    return [[self class] executeUpdateWithSql:sql
+                                    arguments:@[[self valueForKey:primaryKeyPropertyName]]];
+}
+
+#pragma mark - Private
+
+/** Check column is exists in the table. */
++ (BOOL)columnExists:(NSString *)column
+{
+    NSString *tableName = NSStringFromClass([self class]);
     __block BOOL result = NO;
     [[JCDBManager sharedManager].dbQueue inDatabase:^(FMDatabase *db) {
-        result = [db executeUpdate:sql, [self valueForKey:primaryKeyPropertyName]];
+        result = [db columnExists:column inTableWithName:tableName];
     }];
     return result;
 }
 
-#pragma mark - Private
+/** Execute update with sql and arguments. */
++ (BOOL)executeUpdateWithSql:(NSString *)sql
+                   arguments:(NSArray *)arguments
+{
+    __block BOOL result = NO;
+    [[JCDBManager sharedManager].dbQueue inDatabase:^(FMDatabase *db) {
+        result = [db executeUpdate:sql withArgumentsInArray:arguments];
+    }];
+    return result;
+}
 
 /** Query records with sql and arguments. */
 + (NSArray<JCRecord *> *)queryRecordsWithSql:(NSString *)sql
@@ -329,6 +356,7 @@ static NSString *const RECORD_VALUE_SIGN_FLAG = @"?";
     return recordList;
 }
 
+/** Return JCRecord instance from query item FMResultSet. */
 + (JCRecord *)recordWithResultSet:(FMResultSet *)rs
 {
     JCRecord *record = [[[self class] alloc] init];
@@ -342,14 +370,37 @@ static NSString *const RECORD_VALUE_SIGN_FLAG = @"?";
     return record;
 }
 
-+ (BOOL)columnExists:(NSString *)column
+/** Count records with sql. */
++ (uint64_t)countRecordsWithSql:(NSString *)sql
+                      arguments:(NSArray *)arguments
 {
-    NSString *tableName = NSStringFromClass([self class]);
-    __block BOOL result = NO;
+    __block uint64_t count = 0;
     [[JCDBManager sharedManager].dbQueue inDatabase:^(FMDatabase *db) {
-        result = [db columnExists:column inTableWithName:tableName];
+        FMResultSet *rs = [db executeQuery:sql withArgumentsInArray:arguments];
+        if ([rs next]) {
+            count = [rs unsignedLongLongIntForColumn:@"count"];
+        }
+        [rs close];
     }];
-    return result;
+    return count;
+}
+
+/** conditional AND expression and arguments with conditions. */
++ (NSArray *)conditionalExpressionAndArguments:(NSDictionary *)conditions
+{
+    NSString *conditionalExpression = nil;
+    NSMutableArray *values = [NSMutableArray arrayWithCapacity:conditions.count];
+    for (NSString *key in conditions) {
+        NSString *conditionStr = [NSString stringWithFormat:@"%@ = ?", key];
+        if (conditionalExpression) {
+            conditionalExpression = [NSString stringWithFormat:@"%@ AND %@", conditionalExpression, conditionStr];
+        } else {
+            conditionalExpression = conditionStr;
+        }
+        [values addObject:conditions[key]];
+    }
+    conditionalExpression = [NSString stringWithFormat:@" WHERE %@", conditionalExpression];
+    return @[conditionalExpression, values];
 }
 
 @end
