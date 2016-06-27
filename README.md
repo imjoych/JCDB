@@ -29,56 +29,6 @@ This framework supports the development of iOS 7.0+ in ARC.
 ```objective-c
 [JCTestRecord dropTable];
 ```
-### Records operation
-
-##### SELECT records queries 
-```objective-c
-JCTestRecord *record = [JCTestRecord queryRecordWithPrimaryKeyValue:@"primaryKeyProperty2"];
-```
-```objective-c
-NSArray *queryRecords = [JCTestRecord queryRecordsWithConditions:@{@"testEnumType":@(JCTestEnumTypeTwo)}];
-```
-```objective-c
-queryRecords = [JCTestRecord queryRecordsWithConditionalExpression:@"WHERE testEnumType < ?"
-                                                         arguments:@[@(JCTestEnumTypeTwo)]];
-```
-```objective-c
-queryRecords = [JCTestRecord queryRecordsWithConditionalExpression:@"ORDER BY testEnumType DESC"
-                                                         arguments:nil];
-```
-```objective-c
-queryRecords = [JCTestRecord queryAllRecords];
-```
-	
-##### SELECT record columns queries
-```objective-c
-NSArray *queryColumns = [JCTestRecord queryColumns:@[@"testPrimaryKey", @"testDate"]
-                             conditionalExpression:@"WHERE testEnumType < ? ORDER BY testInteger DESC"
-                                         arguments:@[@(JCTestEnumTypeOne)]];
-```
-##### SELECT count queries
-```objective-c
-uint64_t count = [JCTestRecord countRecordsWithConditions:@{@"testEnumType":@(JCTestEnumTypeTwo)}];
-```
-```objective-c
-count = [JCTestRecord countRecordsWithConditionalExpression:@"WHERE testEnumType < ?"
-                                                  arguments:@[@(JCTestEnumTypeOne)]];
-```
-```objective-c
-count = [JCTestRecord countAllRecords];
-```
-##### DELETE statement
-```objective-c
-BOOL result = [JCTestRecord deleteRecordsWithConditions:@{@"testEnumType":@(JCTestEnumTypeTwo)}];
-```
-```objective-c
-result = [JCTestRecord deleteRecordsWithConditionalExpression:@"WHERE testEnumType < ?"
-                                                    arguments:@[@(JCTestEnumTypeOne)]];
-```
-```objective-c
-result = [JCTestRecord deleteAllRecords];
-```
-	
 
 ### Current record operation
 
@@ -122,6 +72,56 @@ result = [record updateRecordColumns:@[@"testBOOL", @"testDate", @"testNumber"]
 ##### DELETE statement
 ```objective-c
 result = [record deleteRecord];
+```
+
+### Records operation
+
+##### SELECT records queries 
+```objective-c
+JCTestRecord *record = [JCTestRecord queryRecordWithPrimaryKeyValue:@"primaryKeyProperty2"];
+```
+```objective-c
+NSArray *queryRecords = [JCTestRecord queryRecordsWithConditions:@{@"testEnumType":@(JCTestEnumTypeTwo)}];
+```
+```objective-c
+queryRecords = [JCTestRecord queryRecordsWithConditionalExpression:@"WHERE testEnumType < ?"
+                                                         arguments:@[@(JCTestEnumTypeTwo)]];
+```
+```objective-c
+queryRecords = [JCTestRecord queryRecordsWithConditionalExpression:@"ORDER BY testEnumType DESC"
+                                                         arguments:nil];
+```
+```objective-c
+queryRecords = [JCTestRecord queryAllRecords];
+```
+
+##### SELECT record columns queries
+```objective-c
+NSArray *queryColumns = [JCTestRecord queryColumns:@[@"testPrimaryKey", @"testDate"]
+                             conditionalExpression:@"WHERE testEnumType < ? ORDER BY testInteger DESC"
+                                         arguments:@[@(JCTestEnumTypeOne)]];
+```
+##### SELECT count queries
+```objective-c
+uint64_t count = [JCTestRecord countRecordsWithConditions:@{@"testEnumType":@(JCTestEnumTypeTwo)}];
+```
+```objective-c
+count = [JCTestRecord countRecordsWithConditionalExpression:@"WHERE testEnumType < ?"
+                                                  arguments:@[@(JCTestEnumTypeOne)]];
+```
+```objective-c
+count = [JCTestRecord countAllRecords];
+```
+##### DELETE statement
+```objective-c
+BOOL result = [JCTestRecord deleteRecordsWithConditions:@{@"testEnumType":@(JCTestEnumTypeTwo)}];
+```
+```objective-c
+result = [JCTestRecord deleteRecordsWithConditionalExpression:@"WHERE testEnumType < ?"
+                                                    arguments:@[@(JCTestEnumTypeOne)]];
+```
+```objective-c
+result = [JCTestRecord deleteAllRecords];
 ```
 
 ## CocoaPods
