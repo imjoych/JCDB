@@ -9,7 +9,19 @@
 #import "JCDBManager.h"
 #import <FMDB/FMDB.h>
 
+@interface JCDBManager ()
+
+@property (nonatomic, strong) FMDatabaseQueue *dbQueue;
+
+@end
+
 @implementation JCDBManager
+
+- (FMDatabaseQueue *)dbQueue
+{
+    NSAssert(_dbQueue, @"please create db first!");
+    return _dbQueue;
+}
 
 + (instancetype)sharedManager
 {
