@@ -12,6 +12,12 @@
 #import "JCRecordClassProperty.h"
 #import <FMDB/FMDB.h>
 
+#ifdef DEBUG
+#define JCDBLog(...) NSLog(__VA_ARGS__)
+#else
+#define JCDBLog(...)
+#endif
+
 static NSString *const CREATE_TABLE_SQL = @"CREATE TABLE IF NOT EXISTS %@ (%@)";
 
 static NSString *const DROP_TABLE_SQL = @"DROP TABLE IF EXISTS %@";
@@ -43,7 +49,6 @@ static NSString *const DELETE_RECORD_SQL = @"DELETE FROM %@ WHERE %@ = ?";
     NSArray *properties = [self properties];
     NSAssert([self primaryKeyPropertyName].length > 0, @"primary key is not exist");
     
-    NSString *tableName = NSStringFromClass([self class]);
     NSString *propertiesString = nil;
     for (JCRecordClassProperty *property in properties) {
         NSString *propertyNameAndType = [NSString stringWithFormat:@"%@ %@", property.name, property.dbFieldType];
@@ -56,15 +61,14 @@ static NSString *const DELETE_RECORD_SQL = @"DELETE FROM %@ WHERE %@ = ?";
             propertiesString = propertyNameAndType;
         }
     }
-    NSString *sql = [NSString stringWithFormat:CREATE_TABLE_SQL, tableName, propertiesString];
+    NSString *sql = [NSString stringWithFormat:CREATE_TABLE_SQL, NSStringFromClass([self class]), propertiesString];
     return [self executeUpdateWithSql:sql
                             arguments:nil];
 }
 
 + (BOOL)dropTable
 {
-    NSString *tableName = NSStringFromClass([self class]);
-    NSString *sql = [NSString stringWithFormat:DROP_TABLE_SQL, tableName];
+    NSString *sql = [NSString stringWithFormat:DROP_TABLE_SQL, NSStringFromClass([self class])];
     return [self executeUpdateWithSql:sql
                             arguments:nil];
 }
@@ -89,8 +93,7 @@ static NSString *const DELETE_RECORD_SQL = @"DELETE FROM %@ WHERE %@ = ?";
     if (fieldType.length < 1) {
         return NO;
     }
-    NSString *tableName = NSStringFromClass([self class]);
-    NSString *sql = [NSString stringWithFormat:ALTER_TABLE_SQL, tableName, column, fieldType];
+    NSString *sql = [NSString stringWithFormat:ALTER_TABLE_SQL, NSStringFromClass([self class]), column, fieldType];
     return [self executeUpdateWithSql:sql
                             arguments:nil];
 }
@@ -102,9 +105,8 @@ static NSString *const DELETE_RECORD_SQL = @"DELETE FROM %@ WHERE %@ = ?";
     if (!value) {
         return nil;
     }
-    NSString *tableName = NSStringFromClass([self class]);
-    NSString *primaryKeyPropertyName = [self primaryKeyPropertyName];
-    NSString *sql = [NSString stringWithFormat:SELECT_RECORD_SQL, tableName, primaryKeyPropertyName];
+    
+    NSString *sql = [NSString stringWithFormat:SELECT_RECORD_SQL, NSStringFromClass([self class]), [self primaryKeyPropertyName]];
     __block JCRecord *record = nil;
     [[JCDBManager sharedManager].dbQueue inDatabase:^(FMDatabase *db) {
         FMResultSet *rs = [db executeQuery:sql, value];
@@ -132,9 +134,7 @@ static NSString *const DELETE_RECORD_SQL = @"DELETE FROM %@ WHERE %@ = ?";
     if (conditionalExpression.length < 1) {
         return nil;
     }
-    
-    NSString *tableName = NSStringFromClass([self class]);
-    NSString *sql = [NSString stringWithFormat:SELECT_ALL_SQL, tableName];
+    NSString *sql = [NSString stringWithFormat:SELECT_ALL_SQL, NSStringFromClass([self class])];
     sql = [NSString stringWithFormat:@"%@ %@", sql, conditionalExpression];
     return [self queryRecordsWithSql:sql
                            arguments:arguments];
@@ -142,8 +142,7 @@ static NSString *const DELETE_RECORD_SQL = @"DELETE FROM %@ WHERE %@ = ?";
 
 + (NSArray<JCRecord *> *)queryAllRecords
 {
-    NSString *tableName = NSStringFromClass([self class]);
-    NSString *sql = [NSString stringWithFormat:SELECT_ALL_SQL, tableName];
+    NSString *sql = [NSString stringWithFormat:SELECT_ALL_SQL, NSStringFromClass([self class])];
     return [self queryRecordsWithSql:sql
                            arguments:nil];
 }
@@ -159,7 +158,8 @@ static NSString *const DELETE_RECORD_SQL = @"DELETE FROM %@ WHERE %@ = ?";
     
     NSString *columnsString = nil;
     for (NSString *column in columns) {
-        if (![self columnExists:column]) { // column is not exist in the table
+        if (![self columnExists:column]) {
+            JCDBLog(@"column named '%@' is not exist in the table!!!", column);
             return nil;
         }
         if (columnsString) {
@@ -168,8 +168,7 @@ static NSString *const DELETE_RECORD_SQL = @"DELETE FROM %@ WHERE %@ = ?";
             columnsString = column;
         }
     }
-    NSString *tableName = NSStringFromClass([self class]);
-    NSString *sql = [NSString stringWithFormat:SELECT_COLUMNS_SQL, columnsString, tableName];
+    NSString *sql = [NSString stringWithFormat:SELECT_COLUMNS_SQL, columnsString, NSStringFromClass([self class])];
     sql = [NSString stringWithFormat:@"%@ %@", sql, conditionalExpression];
     __block NSMutableArray *columnsList = [NSMutableArray array];
     [[JCDBManager sharedManager].dbQueue inDatabase:^(FMDatabase *db) {
@@ -203,8 +202,7 @@ static NSString *const DELETE_RECORD_SQL = @"DELETE FROM %@ WHERE %@ = ?";
         return 0;
     }
     
-    NSString *tableName = NSStringFromClass([self class]);
-    NSString *sql = [NSString stringWithFormat:COUNT_ALL_SQL, tableName];
+    NSString *sql = [NSString stringWithFormat:COUNT_ALL_SQL, NSStringFromClass([self class])];
     sql = [NSString stringWithFormat:@"%@ %@", sql, conditionalExpression];
     return [self countRecordsWithSql:sql
                            arguments:arguments];
@@ -212,8 +210,7 @@ static NSString *const DELETE_RECORD_SQL = @"DELETE FROM %@ WHERE %@ = ?";
 
 + (uint64_t)countAllRecords
 {
-    NSString *tableName = NSStringFromClass([self class]);
-    NSString *sql = [NSString stringWithFormat:COUNT_ALL_SQL, tableName];
+    NSString *sql = [NSString stringWithFormat:COUNT_ALL_SQL, NSStringFromClass([self class])];
     return [self countRecordsWithSql:sql
                            arguments:nil];
 }
@@ -235,8 +232,7 @@ static NSString *const DELETE_RECORD_SQL = @"DELETE FROM %@ WHERE %@ = ?";
         return NO;
     }
     
-    NSString *tableName = NSStringFromClass([self class]);
-    NSString *sql = [NSString stringWithFormat:DELETE_ALL_SQL, tableName];
+    NSString *sql = [NSString stringWithFormat:DELETE_ALL_SQL, NSStringFromClass([self class])];
     sql = [NSString stringWithFormat:@"%@ %@", sql, conditionalExpression];
     return [self executeUpdateWithSql:sql
                             arguments:arguments];
@@ -244,8 +240,7 @@ static NSString *const DELETE_RECORD_SQL = @"DELETE FROM %@ WHERE %@ = ?";
 
 + (BOOL)deleteAllRecords
 {
-    NSString *tableName = NSStringFromClass([self class]);
-    NSString *sql = [NSString stringWithFormat:DELETE_ALL_SQL, tableName];
+    NSString *sql = [NSString stringWithFormat:DELETE_ALL_SQL, NSStringFromClass([self class])];
     return [self executeUpdateWithSql:sql
                             arguments:nil];
 }
@@ -254,12 +249,19 @@ static NSString *const DELETE_RECORD_SQL = @"DELETE FROM %@ WHERE %@ = ?";
 
 - (BOOL)updateRecord
 {
-    NSString *tableName = NSStringFromClass([self class]);
     NSArray *properties = [[self class] properties];
     NSString *propertyKeys = nil;
     NSString *propertyValueSigns = nil;
     NSMutableArray *propertyValues = [NSMutableArray array];
     for (JCRecordClassProperty *property in properties) {
+        id value = [self valueForKey:property.name];
+        if (!value || [value isKindOfClass:[NSNull class]]) {
+            if ([property.name isEqualToString:[[self class] primaryKeyPropertyName]]) {
+                JCDBLog(@"primary key value is not valid!!!");
+                return NO;
+            }
+            continue;
+        }
         if (!propertyKeys) {
             propertyKeys = property.name;
             propertyValueSigns = @"?";
@@ -267,9 +269,13 @@ static NSString *const DELETE_RECORD_SQL = @"DELETE FROM %@ WHERE %@ = ?";
             propertyKeys = [NSString stringWithFormat:@"%@, %@", propertyKeys, property.name];
             propertyValueSigns = [NSString stringWithFormat:@"%@, ?", propertyValueSigns];
         }
-        [propertyValues addObject:[self valueForKey:property.name]];
+        [propertyValues addObject:value];
     }
-    NSString *sql = [NSString stringWithFormat:UPDATE_RECORD_SQL, tableName, propertyKeys, propertyValueSigns];
+    if (!propertyKeys || !propertyValueSigns) {
+        return NO;
+    }
+    
+    NSString *sql = [NSString stringWithFormat:UPDATE_RECORD_SQL, NSStringFromClass([self class]), propertyKeys, propertyValueSigns];
     return [[self class] executeUpdateWithSql:sql
                                     arguments:propertyValues];
 }
@@ -281,14 +287,21 @@ static NSString *const DELETE_RECORD_SQL = @"DELETE FROM %@ WHERE %@ = ?";
         || values.count < 1) {
         return NO;
     }
-    NSString *tableName = NSStringFromClass([self class]);
+    
     NSString *primaryKeyPropertyName = [[self class] primaryKeyPropertyName];
+    NSString *primaryKeyPropertyValue = [self valueForKey:primaryKeyPropertyName];
+    if (!primaryKeyPropertyValue) {
+        JCDBLog(@"primary key value is not valid!!!");
+        return NO;
+    }
+    if ([columns containsObject:primaryKeyPropertyName]) {
+        JCDBLog(@"columns should not contains the primary key, which can't be updated!!!");
+        return NO;
+    }
+    
     NSString *columnsNamesAndValueSigns = nil;
     for (NSString *column in columns) {
         if (![[self class] columnExists:column]) { // column is not exist in the table
-            return NO;
-        }
-        if ([column isEqualToString:primaryKeyPropertyName]) { // update column should not be primary key
             return NO;
         }
         
@@ -300,20 +313,24 @@ static NSString *const DELETE_RECORD_SQL = @"DELETE FROM %@ WHERE %@ = ?";
         }
     }
     
-    NSString *sql = [NSString stringWithFormat:UPDATE_RECORD_COLUMNS_SQL, tableName, columnsNamesAndValueSigns, primaryKeyPropertyName];
+    NSString *sql = [NSString stringWithFormat:UPDATE_RECORD_COLUMNS_SQL, NSStringFromClass([self class]), columnsNamesAndValueSigns, primaryKeyPropertyName];
     NSMutableArray *arguments = [NSMutableArray arrayWithArray:values];
-    [arguments addObject:[self valueForKey:primaryKeyPropertyName]];
+    [arguments addObject:primaryKeyPropertyValue];
     return [[self class] executeUpdateWithSql:sql
                                     arguments:arguments];
 }
 
 - (BOOL)deleteRecord
 {
-    NSString *tableName = NSStringFromClass([self class]);
     NSString *primaryKeyPropertyName = [[self class] primaryKeyPropertyName];
-    NSString *sql = [NSString stringWithFormat:DELETE_RECORD_SQL, tableName, primaryKeyPropertyName];
+    NSString *primaryKeyPropertyValue = [self valueForKey:primaryKeyPropertyName];
+    if (!primaryKeyPropertyValue) {
+        JCDBLog(@"primary key value is not valid!!!");
+        return NO;
+    }
+    NSString *sql = [NSString stringWithFormat:DELETE_RECORD_SQL, NSStringFromClass([self class]), primaryKeyPropertyName];
     return [[self class] executeUpdateWithSql:sql
-                                    arguments:@[[self valueForKey:primaryKeyPropertyName]]];
+                                    arguments:@[primaryKeyPropertyValue]];
 }
 
 #pragma mark - Private
@@ -321,10 +338,9 @@ static NSString *const DELETE_RECORD_SQL = @"DELETE FROM %@ WHERE %@ = ?";
 /** Check column is exists in the table. */
 + (BOOL)columnExists:(NSString *)column
 {
-    NSString *tableName = NSStringFromClass([self class]);
     __block BOOL result = NO;
     [[JCDBManager sharedManager].dbQueue inDatabase:^(FMDatabase *db) {
-        result = [db columnExists:column inTableWithName:tableName];
+        result = [db columnExists:column inTableWithName:NSStringFromClass([self class])];
     }];
     return result;
 }
