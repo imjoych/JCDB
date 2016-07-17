@@ -24,66 +24,116 @@
     [JCTestRecord alterTableWithColumn:@"testLongInt"];
     [JCTestRecord alterTableWithColumn:@"testLongLongInt"];
     [JCTestRecord alterTableWithColumn:@"testUnsignedLongLongInt"];
+    [JCTestRecord alterTableWithColumn:@""];
     
     NSLog(@"start update record list...");
-    uint64_t beginTime = mach_absolute_time();
-    [self updateRecordListTest];
-    uint64_t endTime = mach_absolute_time();
-    NSLog(@"update record list times: %.2fs", (CGFloat)(endTime - beginTime)/1000000000);
+    [AppDelegate executeTime:^id {
+        [self updateRecordListTest];
+        return @(YES);
+    }];
     
-    JCTestRecord *record = [JCTestRecord queryRecordWithPrimaryKeyValue:@"primaryKeyProperty2"];
-    NSLog(@"queryRecordWithPrimaryKeyValue: %@", record);
+    __block JCTestRecord *record = nil;
+    NSLog(@"queryRecordWithPrimaryKeyValue:");
+    [AppDelegate executeTime:^id{
+        record = [JCTestRecord queryRecordWithPrimaryKeyValue:@"primaryKeyProperty2"];
+        return record;
+    }];
     
-    BOOL result = [record updateRecordColumns:@[@"testBOOL", @"testDate", @"testNumber"]
-                                       values:@[@(NO), [NSDate dateWithTimeIntervalSince1970:9], @(6.22)]];
-    NSLog(@"updateRecordColumns:values: %@", @(result));
+    NSLog(@"updateRecordColumns:values:");
+    [AppDelegate executeTime:^id{
+        return @([record updateRecordColumns:@[@"testBOOL", @"testDate", @"testNumber"]
+                                      values:@[@(NO), [NSDate dateWithTimeIntervalSince1970:9], @(6.22)]]);
+    }];
     
-    result = [record deleteRecord];
-    NSLog(@"deleteRecord %@", @(result));
+    NSLog(@"deleteRecord");
+    [AppDelegate executeTime:^id{
+        return @([record deleteRecord]);
+    }];
+
+    __block NSArray *queryRecords = nil;
+    NSLog(@"queryRecordsWithConditions:");
+    [AppDelegate executeTime:^id{
+        queryRecords = [JCTestRecord queryRecordsWithConditions:@{@"testEnumType":@(JCTestEnumTypeTwo)}];
+        return @(queryRecords.count);
+    }];
     
-    NSArray *queryRecords = [JCTestRecord queryRecordsWithConditions:@{@"testEnumType":@(JCTestEnumTypeTwo)}];
-    NSLog(@"queryRecordsWithConditions: %@", @(queryRecords.count));
+    NSLog(@"queryRecordsWithConditionalExpression:arguments:");
+    [AppDelegate executeTime:^id{
+        queryRecords = [JCTestRecord queryRecordsWithConditionalExpression:@"WHERE testEnumType < ?"
+                                                                 arguments:@[@(JCTestEnumTypeTwo)]];
+        return @(queryRecords.count);
+    }];
     
-    queryRecords = [JCTestRecord queryRecordsWithConditionalExpression:@"WHERE testEnumType < ?"
-                                                             arguments:@[@(JCTestEnumTypeTwo)]];
-    NSLog(@"queryRecordsWithConditionalExpression:arguments: %@", @(queryRecords.count));
+    NSLog(@"queryRecordsWithConditionalExpression:arguments:");
+    [AppDelegate executeTime:^id{
+        queryRecords = [JCTestRecord queryRecordsWithConditionalExpression:@"ORDER BY testEnumType DESC"
+                                                                 arguments:nil];
+        return @(queryRecords.count);
+    }];
     
-    queryRecords = [JCTestRecord queryRecordsWithConditionalExpression:@"ORDER BY testEnumType DESC"
-                                                             arguments:nil];
-    NSLog(@"queryRecordsWithConditionalExpression:arguments: %@", @(queryRecords.count));
+    NSLog(@"queryAllRecords");
+    [AppDelegate executeTime:^id{
+        queryRecords = [JCTestRecord queryAllRecords];
+        return @(queryRecords.count);
+    }];
     
-    queryRecords = [JCTestRecord queryAllRecords];
-    NSLog(@"queryAllRecords %@", @(queryRecords.count));
+    NSLog(@"queryColumns:conditionalExpression:arguments:");
+    [AppDelegate executeTime:^id{
+        NSArray *queryColumns = [JCTestRecord queryColumns:@[@"testPrimaryKey", @"testDate"]
+                                     conditionalExpression:@"WHERE testEnumType < ? ORDER BY testInteger DESC"
+                                                 arguments:@[@(JCTestEnumTypeOne)]];
+        return @(queryColumns.count);
+    }];
     
-    NSArray *queryColumns = [JCTestRecord queryColumns:@[@"testPrimaryKey", @"testDate"]
-                                 conditionalExpression:@"WHERE testEnumType < ? ORDER BY testInteger DESC"
-                                             arguments:@[@(JCTestEnumTypeOne)]];
-    NSLog(@"queryColumns:conditionalExpression:arguments: %@", @(queryColumns.count));
+    NSLog(@"countRecordsWithConditions:");
+    [AppDelegate executeTime:^id{
+        return @([JCTestRecord countRecordsWithConditions:@{@"testEnumType":@(JCTestEnumTypeTwo)}]);
+    }];
     
-    uint64_t count = [JCTestRecord countRecordsWithConditions:@{@"testEnumType":@(JCTestEnumTypeTwo)}];
-    NSLog(@"countRecordsWithConditions: %@", @(count));
+    NSLog(@"countRecordsWithConditionalExpression:arguments:");
+    [AppDelegate executeTime:^id{
+        return @([JCTestRecord countRecordsWithConditionalExpression:@"WHERE testEnumType < ?"
+                                                           arguments:@[@(JCTestEnumTypeOne)]]);
+    }];
     
-    count = [JCTestRecord countRecordsWithConditionalExpression:@"WHERE testEnumType < ?"
-                                                      arguments:@[@(JCTestEnumTypeOne)]];
-    NSLog(@"countRecordsWithConditionalExpression:arguments: %@", @(count));
+    NSLog(@"countAllRecords");
+    [AppDelegate executeTime:^id{
+        return @([JCTestRecord countAllRecords]);
+    }];
     
-    count = [JCTestRecord countAllRecords];
-    NSLog(@"countAllRecords %@", @(count));
+    NSLog(@"deleteRecordsWithConditions:");
+    [AppDelegate executeTime:^id{
+        return @([JCTestRecord deleteRecordsWithConditions:@{@"testEnumType":@(JCTestEnumTypeTwo)}]);
+    }];
     
-    result = [JCTestRecord deleteRecordsWithConditions:@{@"testEnumType":@(JCTestEnumTypeTwo)}];
-    NSLog(@"deleteRecordsWithConditions: %@", @(result));
+    NSLog(@"deleteRecordsWithConditionalExpression:arguments:");
+    [AppDelegate executeTime:^id{
+        return @([JCTestRecord deleteRecordsWithConditionalExpression:@"WHERE testEnumType < ?"
+                                                            arguments:@[@(JCTestEnumTypeOne)]]);
+    }];
     
-    result = [JCTestRecord deleteRecordsWithConditionalExpression:@"WHERE testEnumType < ?"
-                                                        arguments:@[@(JCTestEnumTypeOne)]];
-    NSLog(@"deleteRecordsWithConditionalExpression:arguments: %@", @(result));
+    NSLog(@"deleteAllRecords");
+    [AppDelegate executeTime:^id{
+        return @([JCTestRecord deleteAllRecords]);
+    }];
     
-    result = [JCTestRecord deleteAllRecords];
-    NSLog(@"deleteAllRecords %@", @(result));
-    
-    result = [JCTestRecord dropTable];
-    NSLog(@"dropTable %@", @(result));
+    NSLog(@"dropTable");
+    [AppDelegate executeTime:^id{
+        return @([JCTestRecord dropTable]);
+    }];
     
     [[JCDBManager sharedManager] closeDB];
+}
+
++ (void)executeTime:(id(^)())completion;
+{
+    id result = nil;
+    uint64_t beginTime = mach_absolute_time();
+    if (completion) {
+        result = completion();
+    }
+    uint64_t endTime = mach_absolute_time();
+    NSLog(@"%@, %.5fs \n\n", result, (CGFloat)(endTime - beginTime)/1000000000);
 }
 
 - (void)updateRecordListTest
@@ -92,7 +142,7 @@
         JCTestRecord *record = [[JCTestRecord alloc] init];
         record.testPrimaryKey = [NSString stringWithFormat:@"primaryKeyProperty%@", @(index + 1)];
         record.testIgnore = @"ignoreProperty";
-        record.testMutableString = [[NSMutableString alloc] initWithString:@"mutableStringProperty"];
+//        record.testMutableString = [[NSMutableString alloc] initWithString:@"mutableStringProperty"];
         record.testNumber = @(6.20);
         record.testDecimalNumber = [[NSDecimalNumber alloc] initWithString:@"2016"];
         record.testDate = [NSDate date];
