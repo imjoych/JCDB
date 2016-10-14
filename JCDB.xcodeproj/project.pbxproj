@@ -18,7 +18,7 @@
 		23F6DAC51D17811F00DCA94C /* JCRecord.m in Sources */ = {isa = PBXBuildFile; fileRef = 23F6DABE1D17811F00DCA94C /* JCRecord.m */; };
 		23F6DAC61D17811F00DCA94C /* JCRecordClassProperty.m in Sources */ = {isa = PBXBuildFile; fileRef = 23F6DAC01D17811F00DCA94C /* JCRecordClassProperty.m */; };
 		23F6DACA1D17895B00DCA94C /* JCTestRecord.m in Sources */ = {isa = PBXBuildFile; fileRef = 23F6DAC91D17895B00DCA94C /* JCTestRecord.m */; };
-		3185A9092A0F606B8B10BFFA /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 982CF05822F30224D0576232 /* libPods.a */; };
+		DB928E3EEB92949E4ECAF82B /* libPods-JCDBDemo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EEE60F992E1E89D6E2D6799F /* libPods-JCDBDemo.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -43,9 +43,9 @@
 		23F6DAC01D17811F00DCA94C /* JCRecordClassProperty.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JCRecordClassProperty.m; sourceTree = "<group>"; };
 		23F6DAC81D17895B00DCA94C /* JCTestRecord.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JCTestRecord.h; sourceTree = "<group>"; };
 		23F6DAC91D17895B00DCA94C /* JCTestRecord.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JCTestRecord.m; sourceTree = "<group>"; };
-		4604E7C4C7E5947C22647532 /* Pods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.release.xcconfig; path = "Pods/Target Support Files/Pods/Pods.release.xcconfig"; sourceTree = "<group>"; };
-		982CF05822F30224D0576232 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		B45DC5BC2F3ED0F64F5C2880 /* Pods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.debug.xcconfig; path = "Pods/Target Support Files/Pods/Pods.debug.xcconfig"; sourceTree = "<group>"; };
+		5E3A52454C595762BA05BD67 /* Pods-JCDBDemo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-JCDBDemo.release.xcconfig"; path = "Pods/Target Support Files/Pods-JCDBDemo/Pods-JCDBDemo.release.xcconfig"; sourceTree = "<group>"; };
+		CC8A94B6B68838FD8AB17754 /* Pods-JCDBDemo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-JCDBDemo.debug.xcconfig"; path = "Pods/Target Support Files/Pods-JCDBDemo/Pods-JCDBDemo.debug.xcconfig"; sourceTree = "<group>"; };
+		EEE60F992E1E89D6E2D6799F /* libPods-JCDBDemo.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-JCDBDemo.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -53,29 +53,21 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3185A9092A0F606B8B10BFFA /* libPods.a in Frameworks */,
+				DB928E3EEB92949E4ECAF82B /* libPods-JCDBDemo.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		10CC3ACC6770FA8610F49D87 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				982CF05822F30224D0576232 /* libPods.a */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 		23CE18791D1287D6005A8D7B = {
 			isa = PBXGroup;
 			children = (
 				23F6DAB71D17811E00DCA94C /* JCDB */,
 				23CE18931D12892F005A8D7B /* JCDBDemo */,
 				23CE18841D1287D6005A8D7B /* Products */,
-				36557458D1581D5EC621F902 /* Pods */,
-				10CC3ACC6770FA8610F49D87 /* Frameworks */,
+				621DBABACD2E9D893C2B9FA5 /* Pods */,
+				2BA62D34523C1AE3E504FED0 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -129,11 +121,19 @@
 			path = JCDB;
 			sourceTree = "<group>";
 		};
-		36557458D1581D5EC621F902 /* Pods */ = {
+		2BA62D34523C1AE3E504FED0 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				B45DC5BC2F3ED0F64F5C2880 /* Pods.debug.xcconfig */,
-				4604E7C4C7E5947C22647532 /* Pods.release.xcconfig */,
+				EEE60F992E1E89D6E2D6799F /* libPods-JCDBDemo.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		621DBABACD2E9D893C2B9FA5 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				CC8A94B6B68838FD8AB17754 /* Pods-JCDBDemo.debug.xcconfig */,
+				5E3A52454C595762BA05BD67 /* Pods-JCDBDemo.release.xcconfig */,
 			);
 			name = Pods;
 			sourceTree = "<group>";
@@ -145,12 +145,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 23CE18A61D12892F005A8D7B /* Build configuration list for PBXNativeTarget "JCDBDemo" */;
 			buildPhases = (
-				6B410710E4B1D17E2EC39CD8 /* Check Pods Manifest.lock */,
+				6B4991B8FD7D5ABBEC27EB08 /* [CP] Check Pods Manifest.lock */,
 				23CE188E1D12892F005A8D7B /* Sources */,
 				23CE188F1D12892F005A8D7B /* Frameworks */,
 				23CE18901D12892F005A8D7B /* Resources */,
-				BEE0F8CB81ACA244999AB706 /* Embed Pods Frameworks */,
-				EADDE8EBE3CD7234C3E7ECC2 /* Copy Pods Resources */,
+				B7146AAFB17B5AC049C97485 /* [CP] Embed Pods Frameworks */,
+				66FA5325FA73ADF31AAF6979 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -207,49 +207,49 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		6B410710E4B1D17E2EC39CD8 /* Check Pods Manifest.lock */ = {
+		66FA5325FA73ADF31AAF6979 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "Check Pods Manifest.lock";
+			name = "[CP] Copy Pods Resources";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-JCDBDemo/Pods-JCDBDemo-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		BEE0F8CB81ACA244999AB706 /* Embed Pods Frameworks */ = {
+		6B4991B8FD7D5ABBEC27EB08 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "Embed Pods Frameworks";
+			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods/Pods-frameworks.sh\"\n";
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
-		EADDE8EBE3CD7234C3E7ECC2 /* Copy Pods Resources */ = {
+		B7146AAFB17B5AC049C97485 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "Copy Pods Resources";
+			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods/Pods-resources.sh\"\n";
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-JCDBDemo/Pods-JCDBDemo-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -384,7 +384,7 @@
 		};
 		23CE18A71D12892F005A8D7B /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = B45DC5BC2F3ED0F64F5C2880 /* Pods.debug.xcconfig */;
+			baseConfigurationReference = CC8A94B6B68838FD8AB17754 /* Pods-JCDBDemo.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_FILE = JCDBDemo/Info.plist;
@@ -396,7 +396,7 @@
 		};
 		23CE18A81D12892F005A8D7B /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4604E7C4C7E5947C22647532 /* Pods.release.xcconfig */;
+			baseConfigurationReference = 5E3A52454C595762BA05BD67 /* Pods-JCDBDemo.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_FILE = JCDBDemo/Info.plist;
