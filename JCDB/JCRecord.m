@@ -3,7 +3,7 @@
 //  JCDB
 //
 //  Created by ChenJianjun on 16/6/16.
-//  Copyright © 2016 Boych<https://github.com/Boych>. All rights reserved.
+//  Copyright © 2016 Joych<https://github.com/imjoych>. All rights reserved.
 //
 //  SQLite3 datatype link: http://sqlite.org/datatype3.html
 
