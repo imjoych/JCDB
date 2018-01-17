@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = 'JCDB'
-  s.version      = '1.0.0'
+  s.version      = '1.0.1'
   s.license      = 'MIT'
   s.summary      = 'A lightweight iOS database framework based on FMDB and SQLite.'
   s.homepage     = 'https://github.com/imjoych/JCDB'
