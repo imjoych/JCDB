@@ -176,7 +176,7 @@ static NSString *const DELETE_RECORD_SQL = @"DELETE FROM %@ WHERE %@ = ?";
         while ([rs next]) {
             NSMutableDictionary *columnsDict = [NSMutableDictionary dictionaryWithCapacity:columns.count];
             for (NSString *column in columns) {
-                columnsDict[column] = [rs objectForColumnName:column];
+                columnsDict[column] = [rs objectForColumn:column];
             }
             [columnsList addObject:columnsDict];
         }
@@ -378,7 +378,7 @@ static NSString *const DELETE_RECORD_SQL = @"DELETE FROM %@ WHERE %@ = ?";
     JCRecord *record = [[[self class] alloc] init];
     NSArray *properties = [self properties];
     for (JCRecordClassProperty *property in properties) {
-        id value = [rs objectForColumnName:property.name];
+        id value = [rs objectForColumn:property.name];
         if (value && ![value isKindOfClass:[NSNull class]]) {
             [record setValue:value forKey:property.name];
         }
