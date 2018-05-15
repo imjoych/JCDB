@@ -7,7 +7,7 @@
 //
 
 #import "JCDBManager.h"
-#import <FMDB/FMDB.h>
+#import "FMDB.h"
 
 @interface JCDBManager ()
 

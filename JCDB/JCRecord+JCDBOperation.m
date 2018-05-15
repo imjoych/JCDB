@@ -10,7 +10,7 @@
 #import "JCRecord+JCDBOperation.h"
 #import "JCDBManager.h"
 #import "JCRecordClassProperty.h"
-#import <FMDB/FMDB.h>
+#import "FMDB.h"
 
 #ifdef DEBUG
 #define JCDBLog(...) NSLog(__VA_ARGS__)
