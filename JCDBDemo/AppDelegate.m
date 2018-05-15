@@ -125,7 +125,7 @@
     [[JCDBManager sharedManager] closeDB];
 }
 
-+ (void)executeTime:(id(^)())completion;
++ (void)executeTime:(id(^)(void))completion
 {
     id result = nil;
     uint64_t beginTime = mach_absolute_time();
